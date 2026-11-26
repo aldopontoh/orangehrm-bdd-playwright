@@ -1,0 +1,33 @@
+{
+  "name": "orangehrm-bdd-playwright",
+  "version": "1.0.0",
+  "description": "Enterprise HRIS QA Automation Framework for OrangeHRM using Playwright, playwright-bdd, and Page Object Model",
+  "private": true,
+  "scripts": {
+    "bdd:gen": "bddgen",
+    "test:bdd": "bddgen && playwright test",
+    "test:smoke": "bddgen && playwright test --grep @smoke",
+    "test:regression": "bddgen && playwright test --grep @regression",
+    "test:chrome": "bddgen && playwright test --project=bdd-chrome",
+    "test:firefox": "bddgen && playwright test --project=bdd-firefox",
+    "test:edge": "bddgen && playwright test --project=bdd-edge",
+    "report": "playwright show-report"
+  },
+  "keywords": [
+    "playwright",
+    "playwright-bdd",
+    "cucumber",
+    "gherkin",
+    "orangehrm",
+    "qa-automation",
+    "pom"
+  ],
+  "author": "QA Automation Architecture",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "dotenv": "^18.0.10",
+    "playwright-bdd": "^9.2.1"
+  }
+}

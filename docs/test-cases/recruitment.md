@@ -1,0 +1,11 @@
+# ISTQB Test Case Matrix: Recruitment Management (`recruitment`)
+
+**Source PRD**: [recruitment.md](../prd/recruitment.md)
+**Techniques Applied**: Equivalence Partitioning, Input Validation, CRUD Lifecycle, File Upload Verification
+
+| Test ID | Requirement ID | Priority | Test Type | Preconditions | Test Steps | Test Data | Expected Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **TC-REC-01** | `REQ-REC-01` | P0 | Positive (CRUD Create + Upload) | Authenticated Admin (`storageState`) | 1. Navigate to `/web/index.php/recruitment/addCandidate`.<br>2. Fill dynamic `AutoQA_*` First Name, Last Name, valid Email, Contact Number, upload an in-memory `.txt` resume, check Consent, and click `Save`. | `testDataFactory.createCandidate()` + `.txt` resume buffer | `"Successfully Saved"` toast appears; browser redirects to Candidate Profile displaying `Application Stage` and candidate full name; cleaned up in `After` hook. |
+| **TC-REC-02** | `REQ-REC-02` | P1 | Negative / Input Validation | Authenticated Admin on `/recruitment/addCandidate` | 1. Click `Save` with blank fields and verify `"Required"` inline messages.<br>2. Fill `Email` with `"invalid-email-format"` and blur/submit. | Email: `"invalid-email-format"` | `"Required"` errors display for empty required inputs; `"Expected format: admin@example.com"` displays for invalid email. |
+| **TC-REC-03** | `REQ-REC-03` | P1 | Positive (Search & Delete) | Authenticated Admin; newly created `AutoQA_*` candidate | 1. Navigate to `/web/index.php/recruitment/viewCandidates`.<br>2. Search via `Candidate Name` autocomplete for the `AutoQA_*` candidate.<br>3. Delete candidate via row trash button and `"Yes, Delete"` confirmation modal. | `AutoQA_*` candidate | Matching candidate row appears; deletion shows `"Successfully Deleted"` toast and removes candidate from list. |
+| **TC-REC-04** | `REQ-REC-04` | P1 | Positive (Vacancies Workflow) | Authenticated Admin (`storageState`) | 1. Navigate to `/web/index.php/recruitment/viewJobVacancy` via `Vacancies` tab.<br>2. Verify `Vacancies` heading and search table headers.<br>3. Click `Add` and verify `Add Vacancy` form controls (`Vacancy Name`, `Job Title`, `Hiring Manager`, `Number of Positions`). | None | Vacancies grid and Add Vacancy form render all required HR recruitment controls accurately. |
