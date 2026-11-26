@@ -1,13 +1,9 @@
 pipeline {
     agent any
 
-    parameters {
-        choice(name: 'BROWSER_PROJECT', choices: ['bdd-chrome', 'bdd-edge', 'bdd-firefox'], description: 'Playwright browser project to execute')
-        string(name: 'GREP_TAGS', defaultValue: '', description: 'Optional tag filter (e.g., @smoke, @regression, @e2e; leave blank to run full suite)')
-    }
-
     environment {
         CI = 'true'
+        BROWSER_PROJECT = 'bdd-chrome'
         BASE_URL = 'https://opensource-demo.orangehrmlive.com'
         ADMIN_USERNAME = 'Admin'
         ADMIN_PASSWORD = 'admin123'
@@ -45,12 +41,10 @@ pipeline {
         stage('Prepare Browsers') {
             steps {
                 bat '''
-                    set TARGET_PROJECT=%BROWSER_PROJECT%
-                    if "%TARGET_PROJECT%"=="" set TARGET_PROJECT=bdd-chrome
-                    if "%TARGET_PROJECT%"=="bdd-firefox" (
+                    if "%BROWSER_PROJECT%"=="bdd-firefox" (
                         call npx playwright install firefox
                     ) else (
-                        echo Using system browser channel for %TARGET_PROJECT%
+                        echo Using system browser channel for %BROWSER_PROJECT%
                     )
                 '''
             }
@@ -64,15 +58,7 @@ pipeline {
 
         stage('Run Playwright BDD Suite') {
             steps {
-                bat '''
-                    set TARGET_PROJECT=%BROWSER_PROJECT%
-                    if "%TARGET_PROJECT%"=="" set TARGET_PROJECT=bdd-chrome
-                    if "%GREP_TAGS%"=="" (
-                        call npx playwright test --project=%TARGET_PROJECT%
-                    ) else (
-                        call npx playwright test --project=%TARGET_PROJECT% --grep "%GREP_TAGS%"
-                    )
-                '''
+                bat 'call npx playwright test --project=%BROWSER_PROJECT%'
             }
         }
     }
