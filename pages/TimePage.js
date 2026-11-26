@@ -41,7 +41,40 @@ class TimePage extends BasePage {
   async submitAttendancePunch(noteText) {
     const beforeState = await this.getCurrentPunchHeadingText();
     await this.punchNoteTextarea.fill(noteText);
-    await this.punchActionButton.click();
+
+    const dayOffsets = [0, 1, 2, 5, 10];
+    for (const dayOffset of dayOffsets) {
+      if (dayOffset > 0) {
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + dayOffset);
+        await this.fillDateByLabel('Date', nextDate);
+        // Wait for OrangeHRM async overlap validation check to settle
+        await this.inlineErrors
+          .first()
+          .waitFor({ state: 'hidden', timeout: 5_000 })
+          .catch(() => {});
+      }
+
+      const [mutationRes] = await Promise.all([
+        this.page
+          .waitForResponse(
+            (res) =>
+              res.url().includes('/api/v2/attendance/') &&
+              ['POST', 'PUT'].includes(res.request().method()),
+            { timeout: 8_000 }
+          )
+          .catch(() => null),
+        this.punchActionButton.click(),
+      ]);
+
+      if (mutationRes && mutationRes.ok()) {
+        await this.waitForToast();
+        await this.waitForSpinnerToDisappear();
+        return beforeState;
+      }
+    }
+
+    // Final fallback so any genuine failure surfaces clearly
     await this.waitForToast();
     await this.waitForSpinnerToDisappear();
     return beforeState;
