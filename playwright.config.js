@@ -14,7 +14,7 @@ const testDir = defineBddConfig({
 const AUTH_FILE = path.resolve(__dirname, 'playwright/.auth/admin.json');
 
 module.exports = defineConfig({
-  timeout: 90_000,
+  timeout: 120_000,
   expect: {
     timeout: 15_000,
   },

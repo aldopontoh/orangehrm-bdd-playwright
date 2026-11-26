@@ -33,17 +33,17 @@ async function clearAndFill(locator, value) {
 }
 
 /**
- * Formats a Date object dynamically based on OrangeHRM's live date placeholder
- * (`yyyy-dd-mm` vs `yyyy-mm-dd`).
+ * Formats a Date object dynamically to match ANY live OrangeHRM placeholder format
+ * (e.g. `yyyy-dd-mm`, `yyyy-mm-dd`, `dd-mm-yyyy`, `mm-dd-yyyy`, `dd/mm/yyyy`).
  */
 function formatDateForPlaceholder(dateObj, placeholder = 'yyyy-dd-mm') {
-  const yyyy = dateObj.getFullYear();
+  const yyyy = String(dateObj.getFullYear());
   const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
   const dd = String(dateObj.getDate()).padStart(2, '0');
   const normalized = (placeholder || 'yyyy-dd-mm').trim().toLowerCase();
 
-  if (normalized === 'yyyy-mm-dd') {
-    return `${yyyy}-${mm}-${dd}`;
+  if (normalized.includes('yyyy') && normalized.includes('mm') && normalized.includes('dd')) {
+    return normalized.replace('yyyy', yyyy).replace('mm', mm).replace('dd', dd);
   }
   return `${yyyy}-${dd}-${mm}`;
 }
@@ -89,17 +89,34 @@ async function ensureEnglishLocale(page) {
   }
 }
 
+function isTransientNavError(err) {
+  const msg = String(err && err.message ? err.message : err);
+  return (
+    msg.includes('ERR_NETWORK_CHANGED') ||
+    msg.includes('ERR_CONNECTION_RESET') ||
+    msg.includes('ERR_NAME_NOT_RESOLVED') ||
+    msg.includes('ERR_ABORTED') ||
+    msg.includes('Timeout')
+  );
+}
+
 async function gotoWithNetworkRetry(page, url, options = { waitUntil: 'domcontentloaded' }) {
   try {
     return await page.goto(url, options);
   } catch (err) {
-    const msg = String(err && err.message ? err.message : err);
-    if (
-      msg.includes('ERR_NETWORK_CHANGED') ||
-      msg.includes('ERR_CONNECTION_RESET') ||
-      msg.includes('ERR_ABORTED')
-    ) {
+    if (isTransientNavError(err)) {
       return await page.goto(url, options);
+    }
+    throw err;
+  }
+}
+
+async function reloadWithNetworkRetry(page, options = { waitUntil: 'domcontentloaded' }) {
+  try {
+    return await page.reload(options);
+  } catch (err) {
+    if (isTransientNavError(err)) {
+      return await page.reload(options);
     }
     throw err;
   }
@@ -112,4 +129,5 @@ module.exports = {
   getFutureWeekday,
   ensureEnglishLocale,
   gotoWithNetworkRetry,
+  reloadWithNetworkRetry,
 };

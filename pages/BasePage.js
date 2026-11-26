@@ -6,6 +6,7 @@ const {
   formatDateForPlaceholder,
   ensureEnglishLocale,
   gotoWithNetworkRetry,
+  reloadWithNetworkRetry,
 } = require('../utils/uiHelpers');
 
 const AUTH_FILE = path.resolve(__dirname, '../playwright/.auth/admin.json');
@@ -73,7 +74,7 @@ class BasePage {
       }
 
       if (!this.page.url().includes(routePath)) {
-        await this.page.goto(routePath, { waitUntil: 'domcontentloaded' });
+        await gotoWithNetworkRetry(this.page, routePath);
         await shellOrLogin.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {});
         await this.waitForSpinnerToDisappear();
       }
@@ -86,7 +87,7 @@ class BasePage {
       if (labelText && labelText !== 'Dashboard') {
         const changed = await ensureEnglishLocale(this.page);
         if (changed) {
-          await this.page.reload({ waitUntil: 'domcontentloaded' });
+          await reloadWithNetworkRetry(this.page);
           await dashboardNavLink.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {});
           await this.waitForSpinnerToDisappear();
         }
@@ -96,7 +97,7 @@ class BasePage {
     // Mid-reset i18n cache guard: if OrangeHRM served raw translation keys (e.g. "general.upgrade"), reload once
     const rawI18nButton = this.page.locator('button:has-text("general.upgrade")');
     if (await rawI18nButton.isVisible().catch(() => false)) {
-      await this.page.reload({ waitUntil: 'domcontentloaded' });
+      await reloadWithNetworkRetry(this.page);
       await shellOrLogin.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {});
       await this.waitForSpinnerToDisappear();
     }

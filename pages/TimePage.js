@@ -136,8 +136,9 @@ class TimePage extends BasePage {
       }
     }
 
-    // Attempt 3 (Punch In overlap recovery): jump past any shared-demo records on today's date
-    for (const dayOffset of [2, 10, 30, 60]) {
+    // Attempt 3 (Punch In overlap recovery): try dates well outside shared-demo 2026-2027 overlapping ranges
+    const randomPastDays = 400 + Math.floor(Math.random() * 500);
+    for (const dayOffset of [-randomPastDays, -1200, 400, 1100]) {
       const nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + dayOffset);
       await this.setDateAndTime(nextDate);
