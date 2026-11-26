@@ -32,11 +32,11 @@ pipeline {
                     echo Node version:
                     node -v
                     echo NPM version:
-                    npm -v
+                    call npm -v
                     if exist package-lock.json (
-                        npm ci || npm install
+                        call npm ci || call npm install
                     ) else (
-                        npm install
+                        call npm install
                     )
                 '''
             }
@@ -48,7 +48,7 @@ pipeline {
                     set TARGET_PROJECT=%BROWSER_PROJECT%
                     if "%TARGET_PROJECT%"=="" set TARGET_PROJECT=bdd-chrome
                     if "%TARGET_PROJECT%"=="bdd-firefox" (
-                        npx playwright install firefox
+                        call npx playwright install firefox
                     ) else (
                         echo Using system browser channel for %TARGET_PROJECT%
                     )
@@ -58,7 +58,7 @@ pipeline {
 
         stage('Generate BDD Specs') {
             steps {
-                bat 'npx bddgen'
+                bat 'call npx bddgen'
             }
         }
 
@@ -68,9 +68,9 @@ pipeline {
                     set TARGET_PROJECT=%BROWSER_PROJECT%
                     if "%TARGET_PROJECT%"=="" set TARGET_PROJECT=bdd-chrome
                     if "%GREP_TAGS%"=="" (
-                        npx playwright test --project=%TARGET_PROJECT%
+                        call npx playwright test --project=%TARGET_PROJECT%
                     ) else (
-                        npx playwright test --project=%TARGET_PROJECT% --grep "%GREP_TAGS%"
+                        call npx playwright test --project=%TARGET_PROJECT% --grep "%GREP_TAGS%"
                     )
                 '''
             }
